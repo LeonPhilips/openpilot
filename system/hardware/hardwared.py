@@ -51,6 +51,10 @@ THERMAL_BANDS = OrderedDict({
 # Override to highest thermal band when offroad and above this temp
 OFFROAD_DANGER_TEMP = 75
 
+# As per cereal/log.capnp NetworkType
+NETWORK_CONNECTION_NONE: int = 0
+NETWORK_CONNECTION_WIFI: int = 1
+
 prev_offroad_states: dict[str, tuple[bool, str | None]] = {}
 
 
@@ -393,7 +397,7 @@ def hardware_thread(end_event, hw_queue) -> None:
     msg.deviceState.somPowerDrawW = som_power_draw
 
     # Check if we need to shut down
-    if power_monitor.should_shutdown(onroad_conditions["ignition"], in_car, off_ts, started_seen):
+    if power_monitor.should_shutdown(onroad_conditions["ignition"], in_car, off_ts, started_seen, msg.deviceState.networkType == NETWORK_CONNECTION_WIFI):
       cloudlog.warning(f"shutting device down, offroad since {off_ts}")
       params.put_bool("DoShutdown", True)
 
